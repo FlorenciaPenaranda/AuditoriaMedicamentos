@@ -6,12 +6,14 @@ import { goTo } from "../../redux/routing/actions";
 import { connect } from "@brunomon/helpers";
 import { isInLayout } from "../../redux/screens/screenLayouts";
 
+import { INTERROGACION, CHECK } from "../../../assets/icons/svgs";
 import { gridLayout } from "@brunomon/template-lit/src/views/css/gridLayout";
 import { input } from "@brunomon/template-lit/src/views/css/input";
 import { select } from "@brunomon/template-lit/src/views/css/select";
 import { check } from "@brunomon/template-lit/src/views/css/check";
 import { button } from "@brunomon/template-lit/src/views/css/button";
-import { aprobarImagen, rechazarImagen } from "../../redux/facturas/actions";
+import { imagenSelected, aprobarImagen, rechazarImagen } from "../../redux/facturas/actions";
+import { auditarImagen } from "./auditarImagen";
 import { Image } from "@material-ui/icons";
 
 const MEDIA_CHANGE = "ui.media.timeStamp";
@@ -25,14 +27,16 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
     constructor() {
         super();
         this.area = "body";
-        this.hidden = true;
+
         this.currentFactura = [];
         this.facturaDetalle = null;
         this.imagenesByFactura = null;
-        this.currentImagen = [];
-        this.observaciones = "";
-        this.motivosRechazoImagenes = null;
-        this.item = {};
+        this.open = false;
+        //this.currentImagen = [];
+        //this.observaciones = "";
+        // this.motivosRechazoImagenes = null;
+        //this.item = {};
+        //this.expedienteFactura = null;
     }
 
     static get styles() {
@@ -57,8 +61,16 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
             :host::-webkit-scrollbar-thumb {
                 background-color: var(--primario);
             }
-            .contenedor {
-                gap: 0 !important;
+            .contenedor,
+            .cuerpo {
+                gap: 32px !important;
+            }
+            .cuerpo {
+                position: relative;
+            }
+            #auditoriaImagen {
+                position: absolute;
+                z-index: 1000;
             }
             .cabeceraFactura {
                 display: grid;
@@ -74,15 +86,32 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
                 font-size: 0.9rem;
                 gap: 0;
                 z-index: 1;
-                padding: 0.3rem;
+
                 align-items: center;
+                border-radius: 0.5rem;
+                padding: 16px 16px;
             }
             .detalleFactura {
+                position: relative;
                 background-color: var(--formulario);
                 gap: 0 !important;
+                border-radius: 0.5rem;
+                box-shadow: var(--shadow-elevation-2-box);
+            }
+            .cabeceraDetalle {
+                position: absolute;
+                background-color: var(--secundario);
+                padding: 1.2rem 6rem;
+                border-radius: 8px;
+                z-index: 100;
+                top: -6%;
+                left: 35%;
+                color: var(--on-primario);
+                font-size: 2vh;
+                font-weight: bold;
             }
             .descImagenes {
-                box-shadow: var(--shadow-elevation-2-box);
+                padding: 0px 16px 0px 16px;
             }
             .botonera {
                 grid-template-columns: 50% 45%;
@@ -123,6 +152,28 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
                 font-weight: bold;
             }
             .documentos {
+                margin: 50px 0px 25px 0px;
+            }
+            .documento {
+                grid-template-columns: 0.8rem 1.2rem auto;
+                padding: 1rem 4rem !important;
+                border-style: none;
+                background-color: var(--formulario);
+                color: var(--on-formulario);
+                text-align-last: start;
+                border-bottom: 1px solid var(--on-formulario-separador);
+                cursor: pointer;
+            }
+            .boton {
+                padding: 0.5rem 1rem;
+                border-style: none;
+                background-color: var(--formulario);
+                color: var(--on-formulario);
+                text-align-last: start;
+                //border-bottom: 1px solid var(--on-formulario-separador);
+                cursor: pointer;
+            }
+            /*.documentos {
                 background-color: var(--aplicacion);
 
                 place-self: end;
@@ -152,12 +203,12 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
             }
             .opacity {
                 background-color: red;
-            }
+            }*/
             .imagenDetalle {
                 grid-template-columns: 40% 60%;
                 color: var(--on-formulario);
             }
-            #iframePDF {
+            iframePDF {
                 margin: auto;
                 width: 55vw;
                 height: 100vh;
@@ -195,117 +246,62 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
                 font-weight: var(--font-label-weight);
                 color: var(--on-formulario);
             }
+            *[hidden] {
+                display: none;
+            }
         `;
     }
 
     render() {
         return html`
             <div class="contenedor grid body">
-                <div class="cabeceraFactura grid rows">
-                    <div id="fecha" class="etiqueta inner-grid column start ">
-                        <label>Fecha:</label>
-                        <div>${new Date(this.currentFactura.FechaComprobante).toLocaleDateString()}</div>
-                    </div>
-                    <div id="letra" class="inner-grid rows center">
-                        <div class="let grid center">${this.currentFactura.TipoDocumento}</div>
-                        <div class="grid center">${this.currentFactura.TipoComprobante}</div>
-                    </div>
-                    <div id="comprobante" class="justify-self-end etiqueta inner-grid column">
-                        <label>Nro comprobante: </label>
-                        <div>${this.currentFactura.PuntoVenta} - ${this.currentFactura.NumeroComprobante}</div>
-                    </div>
-                    <div id="prestador" class="etiqueta inner-grid column start">
-                        <label> Nro Prestador: </label>
-                        <div>${this.currentFactura.Prestador}</div>
-                    </div>
-                    <div id="nombre" class="etiqueta inner-grid column start">
-                        <label>Nombre: </label>
-                        <div>${this.currentFactura.Nombre}</div>
-                    </div>
-                    <div id="importe" class="justify-self-end etiqueta inner-grid column">
-                        <label>Importe: </label>
-                        <div>$${this.currentFactura.ImporteTotalFactura} .-</div>
-                    </div>
-                </div>
-
-
-                    <div class="documentos inner-grid column align-start">                               
-                            ${this.imagenesByFactura?.map((item) => {
-                                return html` <button tabs class="documento" .item=${item} @click=${this.imagen}>${item.DocumentacionDescripcion}</button>`;
-                            })}                      
+                <div class="cuerpo grid">
+                    <div class="cabeceraFactura grid rows">
+                        <div id="fecha" class="etiqueta inner-grid column start ">
+                            <label>Fecha:</label>
+                            <div>${new Date(this.currentFactura.FechaComprobante).toLocaleDateString()}</div>
+                        </div>
+                        <div id="letra" class="inner-grid rows center">
+                            <div class="let grid center">${this.currentFactura.TipoDocumento}</div>
+                            <div class="grid center">${this.currentFactura.TipoComprobante}</div>
+                        </div>
+                        <div id="comprobante" class="justify-self-end etiqueta inner-grid column">
+                            <label>Nro comprobante: </label>
+                            <div>${this.currentFactura.PuntoVenta} - ${this.currentFactura.NumeroComprobante}</div>
+                        </div>
+                        <div id="prestador" class="etiqueta inner-grid column start">
+                            <label> Nro Prestador: </label>
+                            <div>${this.currentFactura.Prestador}</div>
+                        </div>
+                        <div id="nombre" class="etiqueta inner-grid column start">
+                            <label>Nombre: </label>
+                            <div>${this.currentFactura.Nombre}</div>
+                        </div>
+                        <div id="importe" class="justify-self-end etiqueta inner-grid column">
+                            <label>Importe: </label>
+                            <div>$${this.currentFactura.ImporteTotalFactura} .-</div>
+                        </div>
                     </div>
 
-                <div class="detalleFactura inner-grid columns">
-                    <div class="descImagenes">
-                        <div class="imagenDetalle inner-grid column">   
-                            <div class="detalleList inner-grid row" >                        
-                                ${this.facturaDetalle?.map((item) => {
-                                    return html`<div .item=${item}>
-                                        <div class="inner-grid column">
-                                            <label>Expediente:</label>
-                                            <div>${item.Expediente}</div>
-                                            <label>Troquel:</label>
-                                            <div>${item.Troquel}</div>
-                                        </div>
-                                        <div class="inner-grid column">
-                                            <div class="inner-grid row">
-                                                <label>PrecioUnitario:</label>
-                                                <div>${item.PrecioUnitario}</div>
-                                            </div>
-                                            <div class="inner-grid row">
-                                                <label>Cantidad:</label>
-                                                <div>X ${item.Cantidad}</div>
-                                            </div>
-                                            <div class="inner-grid row">
-                                                <label>PrecioTotal:</label>
-                                                <div>${item.PrecioTotal}</div>
-                                            </div>
-                                        </div>
-                                        <label>Descripcion:</label>
-                                        <div>${item.Descripcion}</div>
-                                        <div class="inner-grid column">
-                                            <label>GETIN:</label>
-                                            <div>${item.GTIN}</div>
-                                        </div>
-                                    </div> `;
+                    <div class="detalleFactura inner-grid columns">
+                        <div class="cabeceraDetalle">IMAGENES DE FACTURA</div>
+
+                        <div class="descImagenes">
+                            <div class="documentos inner-grid row align-start">
+                                ${this.imagenesByFactura?.map((item) => {
+                                    return html` <div class="documento inner-grid column align-start">
+                                        <div>${INTERROGACION}</div>
+                                        <div>${CHECK}</div>
+                                        <button tabs class="boton" .item=${item.DocumentacionDescripcion} .option=${"auditarImagen"} @click=${this.seleccionarImagen}>
+                                            ${item.DocumentacionDescripcion}
+                                        </button>
+                                    </div>`;
                                 })}
-                            </div> 
-
-                            <div class="iframe grid row ">
-                                <iframe  id="iframePDF"  type="application/pdf" src="${this.currentImagen}"></iframe>
                             </div>
-
-                      
                         </div>
-                    
-
-                        <div class="botonera grid columns">
-                            
-                            <div class="observaciones grid row">
-                                <div class="select" >
-                                    <label>Seleccion Motivo de rechazo: </label>
-                                    <select id="select" >
-                                    <option value="" disabled selected>Selecciona una opción</option>
-                                    ${this.motivosRechazoImagenes?.map((item) => {
-                                        return html`<option .value=${item.Id}>${item.Descripcion}</option> `;
-                                    })}
-                                    </select>
-                                </div >
-                                <div class="textarea">
-                                    <label>Observaciones del rechazo : </label>
-                                    <textarea  id="comentarios" @change="${this.observacionesChange}" .value="${this.observaciones}"></textarea>
-                                </div>
-                            </div>
-                            <div class="botones grid columns">
-                                    <button  raised id="aprobar" @click=${this.aprobar}>Aprobar</button>
-                                    <button link id="rechazar" @click=${this.rechazar}>Rechazar</button>
-                            </div>
-                            
-                        </div>
-                        
+                    </div>
                 </div>
-            </div>
-                </div>
+                <auditar-imagen id="auditoriaImagen" ?hidden=${!this.open}></auditar-imagen>
             </div>
         `;
     }
@@ -319,12 +315,13 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
             const isCurrentScreen = ["detalleFactura"].includes(state.screen.name);
             if (isInLayout(state, this.area) && isCurrentScreen) {
                 this.hidden = false;
-                this.imagen;
+                this.open = false;
             }
+
             this.update();
         }
 
-        this.currentImagen = null;
+        //this.currentImagen = null;
 
         if (name == CURRENT_FACTURA) {
             this.currentFactura = state.facturas.currentSelection;
@@ -338,14 +335,14 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
 
         if (name == IMAGENES_BY_FACTURA) {
             this.imagenesByFactura = state.facturas.imagenesByFactura;
-            this.currentImagen = this.imagenesByFactura[0].UrlNom;
+            //this.currentImagen = this.imagenesByFactura[0].UrlNom;
             this.update();
         }
 
-        if (name == MOTIVO_RECHAZO) {
+        /*if (name == MOTIVO_RECHAZO) {
             this.motivosRechazoImagenes = state.facturas.motivosRechazo.value;
             this.update();
-        }
+        }*/
     }
 
     atras(e) {
@@ -354,40 +351,11 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
         this.update();
     }
 
-    imagen(e) {
-        this.currentImagen = e.currentTarget.item.UrlNom;
-    }
+    seleccionarImagen(e) {
+        store.dispatch(imagenSelected(e.currentTarget.item));
+        this.open = true;
 
-    aprobar(e) {
-        let imagen = this.imagenesByFactura.filter((item) => {
-            if (item.UrlNom == this.currentImagen) return item.IdImagen;
-        });
-
-        console.log(imagen);
-
-        const imagenAAprobar = {
-            Params: {
-                IdFactura: imagen[0].IdFacturaCabecera,
-                IdImagen: imagen[0].IdImagen,
-            },
-        };
-
-        store.dispatch(aprobarImagen(imagenAAprobar));
-    }
-
-    rechazar(e) {
-        let imagen = this.imagenesByFactura.filter((item) => {
-            if (item.UrlNom == this.currentImagen) return item.IdImagen;
-        });
-
-        const imagenARechazar = {
-            IdFactura: imagen[0].IdFacturaCabecera,
-            IdImagen: imagen[0].IdImagen,
-            IdMotivoRechazo: this.shadowRoot.querySelector("#select").value,
-            Comentario: this.shadowRoot.querySelector("#comentarios").value,
-        };
-
-        store.dispatch(rechazarImagen(imagenARechazar));
+        this.update();
     }
 
     static get properties() {
