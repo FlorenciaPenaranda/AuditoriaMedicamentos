@@ -1,6 +1,24 @@
 /** @format */
 
-import { SHOW_SPINNER, HIDE_SPINNER, SHOW_ERROR, HIDE_ERROR, SET_MEDIA, SET_MEDIA_ORIENTATION, SELECTION, STEP, SHOW_ALERT, SHOW_CONFIRM, LOGUEAR_CON_NUEVO_USUARIO } from "./actions";
+import {
+    SHOW_SPINNER,
+    HIDE_SPINNER,
+    SHOW_ERROR,
+    HIDE_ERROR,
+    SET_MEDIA,
+    SET_MEDIA_ORIENTATION,
+    SELECTION,
+    STEP,
+    SHOW_ALERT,
+    SHOW_CONFIRM,
+    LOGUEAR_CON_NUEVO_USUARIO,
+    BUSCAR,
+    ORDENAR,
+    SHOW_AUDITAR_IMAGEN,
+    HIDE_AUDITAR_IMAGEN,
+    SHOW_RECHAZAR_IMAGEN,
+    HIDE_RECHAZAR_IMAGEN,
+} from "./actions";
 
 const initialState = {
     spinner: {
@@ -19,7 +37,6 @@ const initialState = {
         timeStamp: null,
         option: "",
     },
-
     alert: {
         timeStamp: null,
         titulo: null,
@@ -37,6 +54,18 @@ const initialState = {
         step: 1,
     },
     loguearConNuevoUsuarioTimeStamp: null,
+    busqueda: {
+        texto: null,
+        timeStamp: null,
+    },
+    ordenar: {
+        timeStamp: null,
+        order: null,
+    },
+    showAuditarImagenTimeStamp: null,
+    hideAuditarImagenTimeStamp: null,
+    showRechazarImagenTimeStamp: null,
+    hideRechazarImagenTimeStamp: null,
 };
 
 export const reducer = (state = initialState, action) => {
@@ -88,6 +117,26 @@ export const reducer = (state = initialState, action) => {
             break;
         case LOGUEAR_CON_NUEVO_USUARIO:
             newState.loguearConNuevoUsuarioTimeStamp = new Date().getTime();
+            break;
+        case BUSCAR:
+            newState.busqueda.timeStamp = new Date().getTime();
+            newState.busqueda.texto = action.texto;
+            break;
+        case ORDENAR:
+            newState.ordenar.timeStamp = new Date().getTime();
+            newState.ordenar.order = action.order;
+            break;
+        case SHOW_AUDITAR_IMAGEN:
+            newState.showAuditarImagenTimeStamp = new Date().getTime();
+            break;
+        case HIDE_AUDITAR_IMAGEN:
+            newState.hideAuditarImagenTimeStamp = new Date().getTime();
+            break;
+        case SHOW_RECHAZAR_IMAGEN:
+            newState.showRechazarImagenTimeStamp = new Date().getTime();
+            break;
+        case HIDE_RECHAZAR_IMAGEN:
+            newState.hideRechazarImagenTimeStamp = new Date().getTime();
             break;
     }
     return newState;

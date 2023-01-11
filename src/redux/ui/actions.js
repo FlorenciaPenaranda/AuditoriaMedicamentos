@@ -21,6 +21,15 @@ export const SHOW_CONFIRM = "[ui] show confirm";
 
 export const LOGUEAR_CON_NUEVO_USUARIO = "[ui] loguear con nuevo usuario";
 
+export const BUSCAR = "[ui] buscar";
+export const ORDENAR = "[ui] ordenar";
+
+export const SHOW_AUDITAR_IMAGEN = "[ui] show auditar imagen";
+export const HIDE_AUDITAR_IMAGEN = "[ui] hide auditar imagen";
+
+export const SHOW_RECHAZAR_IMAGEN = "[ui] show rechazar imagen";
+export const HIDE_RECHAZAR_IMAGEN = "[ui] hide rechazar imagen";
+
 export const showSpinner = () => ({
     type: SHOW_SPINNER,
 });
@@ -73,4 +82,30 @@ export const setStep = (step) => ({
 
 export const loguearConNuevoUsuario = () => ({
     type: LOGUEAR_CON_NUEVO_USUARIO,
+});
+
+export const buscar = (texto) => ({
+    type: BUSCAR,
+    texto: texto,
+});
+
+export const ordenar = (order) => ({
+    type: ORDENAR,
+    order: order,
+});
+
+export const showAuditarImagen = () => ({
+    type: SHOW_AUDITAR_IMAGEN,
+});
+
+export const hideAuditarImagen = () => ({
+    type: HIDE_AUDITAR_IMAGEN,
+});
+
+export const showRecahzarImagen = () => ({
+    type: SHOW_RECHAZAR_IMAGEN,
+});
+
+export const hideRecahzarImagen = () => ({
+    type: HIDE_RECHAZAR_IMAGEN,
 });

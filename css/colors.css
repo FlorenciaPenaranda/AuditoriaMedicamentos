@@ -29,6 +29,11 @@ html {
     --on-formulario-separador: rgba(0, 0, 0, 0.12);
     --on-formulario-bajada: rgba(0, 0, 0, 0.6);
     --velo: rgba(0, 0, 0, 0.32);
+
+    --ok: rgba(168, 235, 16, 1);
+    --error: #b00020;
+    --pending: rgb(179, 179, 54);
+    --in-review: rgba(74, 125, 187, 1);
 }
 
 @media (prefers-color-scheme: dark) {

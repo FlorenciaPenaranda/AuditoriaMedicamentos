@@ -24,6 +24,8 @@ export const MOTIVO_RECHAZO = "[facturas] motivo rechazo by factura";
 export const MOTIVO_RECHAZO_SUCCESS = "[facturas] motivo rechazo by factura ssucces";
 export const MOTIVO_RECHAZO_ERROR = "[facturas] motivo rechazo by factura error";
 
+export const SELECCIONAR_IMAGEN = "[facturas] abrir imagen";
+
 export const getFacturasPendientes = (item) => ({
     type: GET_FACTURAS_PENDIENTES,
     item: item,
@@ -33,7 +35,7 @@ export const getFacturaDetalle = (id) => ({
     id: id,
 });
 
-export const getImagenesByFactura = (idFactura) => ({
+export const imagenesByFactura = (idFactura) => ({
     type: GET_IMAGENES_BY_FACTURA,
     idFactura: idFactura,
 });
@@ -55,4 +57,9 @@ export const rechazarImagen = (item) => ({
 
 export const MotivosRechazo = () => ({
     type: MOTIVO_RECHAZO,
+});
+
+export const imagenSelected = (imagen) => ({
+    type: SELECCIONAR_IMAGEN,
+    imagen: imagen,
 });

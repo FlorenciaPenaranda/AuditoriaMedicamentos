@@ -11,12 +11,16 @@ import { goTo } from "../redux/routing/actions";
 import { spinner } from "@brunomon/template-lit/src/views/css/spinner";
 import { gridLayout } from "@brunomon/template-lit/src/views/css/gridLayout";
 
+import { splashScreen } from "./componentes/splash";
 import { menuPrincipal } from "./headers/menu";
 import { auditoriaFacturas } from "./componentes/auditoriaFacturas";
 import { detalleFactura } from "./componentes/detalleFactura";
 import { filtrosFacturas } from "./componentes/filtrosFacturas";
+import { auditarImagen } from "./componentes/auditarImagen";
+import { rechazoImagen } from "./componentes/rechazoImagen";
 import { formTest } from "./componentes/formTest";
 import { ConfirmControl } from "./componentes/confirm";
+import { AlertControl } from "./componentes/alert";
 
 const MEDIA_CHANGE = "ui.media.timeStamp";
 const SCREEN = "screen.timeStamp";
@@ -45,8 +49,8 @@ export class viewManager extends connect(store, MEDIA_CHANGE, SCREEN, SELECTION)
                 padding: 0;
                 background-color: var(--aplicacion);
                 overflow: hidden;
+                position: ;
             }
-
             :host::-webkit-scrollbar {
                 width: 0.5vw;
                 cursor: pointer;
@@ -64,15 +68,18 @@ export class viewManager extends connect(store, MEDIA_CHANGE, SCREEN, SELECTION)
     render() {
         return html`
             <menu-principal></menu-principal>
+            <splash-screen id="splash" area="body"></splash-screen>
             <auditoria-facturas class="body"></auditoria-facturas>
             <detalle-factura class="body"></detalle-factura>
+            <auditar-imagen></auditar-imagen>
 
+            <rechazo-imagen></rechazo-imagen>
+
+            <alert-control></alert-control>
             <confirm-control></confirm-control>
         `;
     }
 
-    // <form-test class="body" hidden></form-test><auditoria-facturas class="body"></auditoria-facturas>
-    //<detalle-factura class="body"></detalle-factura>
     stateChanged(state, name) {
         if (name == MEDIA_CHANGE || name == SCREEN) {
             this.mediaSize = state.ui.media.size;

@@ -13,6 +13,7 @@ import {
     RECHAZAR_IMAGEN_ERROR,
     MOTIVO_RECHAZO_SUCCESS,
     MOTIVO_RECHAZO_ERROR,
+    SELECCIONAR_IMAGEN,
 } from "./actions";
 import { store } from "../store";
 
@@ -34,6 +35,8 @@ const initialState = {
     motivosRechazo: null,
     motivoRechazoTimeStamp: null,
     errorMotivoRechazoTimeStamp: null,
+    imagenSelected: null,
+    currentImagentimeStamp: null,
 };
 
 export const reducer = (state = initialState, action, e) => {
@@ -81,6 +84,10 @@ export const reducer = (state = initialState, action, e) => {
             break;
         case MOTIVO_RECHAZO_ERROR:
             newState.errorMotivoRechazoTimeStamp = new Date().getTime();
+            break;
+        case SELECCIONAR_IMAGEN:
+            newState.imagenSelected = action.imagen;
+            newState.currentImagentimeStamp = new Date().getTime();
             break;
     }
     return newState;

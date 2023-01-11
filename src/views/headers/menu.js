@@ -14,6 +14,8 @@ import { gesturesController } from "@brunomon/template-lit/src/views/controllers
 import { autorizacion } from "../../redux/autorizacion/actions";
 import { selection } from "../../redux/ui/actions";
 import { showConfirm, loguearConNuevoUsuario } from "../../redux/ui/actions";
+import { getFacturasPendientes } from "../../redux/facturas/actions";
+import logoCruz from "../../../assets/image/logoCruz.png";
 
 const MEDIA_CHANGE = "ui.media.timeStamp";
 const SELECTION = "ui.menu.timeStamp";
@@ -219,7 +221,7 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
             <div id="velo" @click=${this.toggleMenu}></div>
             <div class="grid column">
                 <div class="inner-grid column start">
-                    <div class="logo"></div>
+                    <div id="imagen" style="background-image:url(${logoCruz})"></div>
                     <h1 id="titulo" @click="${this.click}" .option=${"main"}>${__DESCRIPTION__}</h1>
                     <div id="version">${__VERSION__}</div>
                 </div>
@@ -228,7 +230,7 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
 
             <div id="opciones" class="grid column" @click=${this.toggleMenu}>
                 <button raised circle action class="menu-button">${RIGHT}</button>
-                <button link ?selected="${this.selectedOption[1]}" @click=${this.auditoriaFacturas} .option=${"auditoriaFacturas"} solo-logueado>Auditar Facturas</button>
+                <button link ?selected="${this.selectedOption[1]}" @click=${this.auditoriaFacturas} .option=${"auditoriaFacturas"} solo-logueado>Facturas a auditar</button>
 
                 <div id="acceso" ?logueado="${this.logueado}">
                     <button link etiqueta ?selected="${this.selectedOption[2]}" @click=${this.abrir} .option=${"log"}>
@@ -282,13 +284,13 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
     }
     abrirForzado(e) {
         this.popUp = window.open("https://front.uocra.net/auth/index.html?nuevo=true", "_blank", "top=0,left=0,width=" + window.innerWidth / 2 + ",height=" + window.innerHeight, true);
-        store.dispatch(goTo("main"));
+        store.dispatch(goTo("splash"));
     }
 
     salir() {
         this.profile = "ACCEDER";
         this.logueado = false;
-        store.dispatch(goTo("main"));
+        store.dispatch(goTo("splash"));
     }
 
     auditoriaFacturas(e) {
@@ -296,6 +298,20 @@ export class menuPrincipal extends connect(store, MEDIA_CHANGE, SCREEN, USUARIO,
         this.selectedOption[Array.from(e.currentTarget.parentNode.children).indexOf(e.currentTarget) - 1] = true;
 
         store.dispatch(goTo("auditoriaFacturas"));
+        store.dispatch(
+            getFacturasPendientes({
+                Params: {
+                    FacturasEstado: 1,
+                    FechaDesde: "",
+                    FechaHasta: "",
+                    TipoComprobante: "",
+                    PuntoVenta: "",
+                    TipoDocumento: "",
+                    NumeroComprobante: "",
+                    Prestador: "",
+                },
+            })
+        );
     }
 
     firstUpdated(changedProperties) {

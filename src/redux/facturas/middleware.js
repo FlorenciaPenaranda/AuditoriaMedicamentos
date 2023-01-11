@@ -23,6 +23,8 @@ import {
 import { apiRequest } from "../api/actions";
 import { goTo } from "../routing/actions.js";
 import { RESTAdd, RESTRequest } from "../rest/actions.js";
+import { imagenesByFactura as getImagenesByFactura } from "./actions";
+import { showAlert } from "../ui/actions.js";
 
 export const getFacturasPendientes =
     ({ dispatch }) =>
@@ -54,7 +56,7 @@ export const getFacturaDetalle =
         }
     };
 
-export const getImagenesByFactura =
+export const imagenesByFactura =
     ({ dispatch }) =>
     (next) =>
     (action) => {
@@ -77,6 +79,17 @@ export const aprobarImagenByFactura =
         }
     };
 
+export const aprobarImagenByFacturaSuccess =
+    ({ dispatch, getState }) =>
+    (next) =>
+    (action) => {
+        next(action);
+        if (action.type === APROBAR_IMAGEN_SUCCESS) {
+            dispatch(getImagenesByFactura(getState().facturas.currentSelection.Id));
+            dispatch(showAlert("", "La factura fue aprobada correctamente"));
+        }
+    };
+
 export const rechazarImagenByFactura =
     ({ dispatch }) =>
     (next) =>
@@ -91,6 +104,17 @@ export const rechazarImagenByFactura =
         }
     };
 
+export const rechazarImagenByFacturaSuccess =
+    ({ dispatch, getState }) =>
+    (next) =>
+    (action) => {
+        next(action);
+        if (action.type === RECHAZAR_IMAGEN_SUCCESS) {
+            dispatch(getImagenesByFactura(getState().facturas.currentSelection.Id));
+            dispatch(showAlert("", "La factura fue rechazada correctamente"));
+        }
+    };
+
 export const motivoRechazo =
     ({ dispatch }) =>
     (next) =>
@@ -101,4 +125,13 @@ export const motivoRechazo =
             //dispatch({ type: GET_SUCCESS });
         }
     };
-export const middleware = [getFacturasPendientes, getFacturaDetalle, getImagenesByFactura, aprobarImagenByFactura, rechazarImagenByFactura, motivoRechazo];
+export const middleware = [
+    getFacturasPendientes,
+    getFacturaDetalle,
+    imagenesByFactura,
+    aprobarImagenByFactura,
+    aprobarImagenByFacturaSuccess,
+    rechazarImagenByFactura,
+    rechazarImagenByFacturaSuccess,
+    motivoRechazo,
+];

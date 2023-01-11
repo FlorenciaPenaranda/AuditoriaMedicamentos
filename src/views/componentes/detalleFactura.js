@@ -6,7 +6,8 @@ import { goTo } from "../../redux/routing/actions";
 import { connect } from "@brunomon/helpers";
 import { isInLayout } from "../../redux/screens/screenLayouts";
 
-import { INTERROGACION, CHECK } from "../../../assets/icons/svgs";
+import { PENDING, CHECK, CLOSE, SEARCH } from "../../../assets/icons/svgs";
+import { iconosEstados } from "../css/iconosEstados";
 import { gridLayout } from "@brunomon/template-lit/src/views/css/gridLayout";
 import { input } from "@brunomon/template-lit/src/views/css/input";
 import { select } from "@brunomon/template-lit/src/views/css/select";
@@ -14,7 +15,8 @@ import { check } from "@brunomon/template-lit/src/views/css/check";
 import { button } from "@brunomon/template-lit/src/views/css/button";
 import { imagenSelected, aprobarImagen, rechazarImagen } from "../../redux/facturas/actions";
 import { auditarImagen } from "./auditarImagen";
-import { Image } from "@material-ui/icons";
+import { Image, Store } from "@material-ui/icons";
+import { showAuditarImagen, SHOW_COMPONENT } from "../../redux/ui/actions";
 
 const MEDIA_CHANGE = "ui.media.timeStamp";
 const SCREEN = "screen.timeStamp";
@@ -31,12 +33,13 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
         this.currentFactura = [];
         this.facturaDetalle = null;
         this.imagenesByFactura = null;
-        this.open = false;
-        //this.currentImagen = [];
-        //this.observaciones = "";
-        // this.motivosRechazoImagenes = null;
-        //this.item = {};
-        //this.expedienteFactura = null;
+
+        this.svgs = {
+            1: { estado: "PENDIENTE", imagen: PENDING },
+            2: { estado: "APROBADA", imagen: CHECK },
+            3: { estado: "RECHAZADA", imagen: CLOSE },
+            4: { estado: "EN REVISION DE FKD", imagen: SEARCH },
+        };
     }
 
     static get styles() {
@@ -45,6 +48,7 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
             ${input}
             ${select}
             ${button}
+            ${iconosEstados}
             :host {
                 display: grid;
                 align-content: start;
@@ -67,10 +71,6 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
             }
             .cuerpo {
                 position: relative;
-            }
-            #auditoriaImagen {
-                position: absolute;
-                z-index: 1000;
             }
             .cabeceraFactura {
                 display: grid;
@@ -155,7 +155,7 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
                 margin: 50px 0px 25px 0px;
             }
             .documento {
-                grid-template-columns: 0.8rem 1.2rem auto;
+                grid-template-columns: 2rem auto;
                 padding: 1rem 4rem !important;
                 border-style: none;
                 background-color: var(--formulario);
@@ -170,40 +170,8 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
                 background-color: var(--formulario);
                 color: var(--on-formulario);
                 text-align-last: start;
-                //border-bottom: 1px solid var(--on-formulario-separador);
                 cursor: pointer;
             }
-            /*.documentos {
-                background-color: var(--aplicacion);
-
-                place-self: end;
-                padding: 0px;
-                gap: 0 !important;
-            }
-            .documento {
-                background-color: var(--primario10);
-                color: var(--on-formulario);
-                border-style: none;
-                font-size: 0.9rem;
-                font-weight: bold;
-                height: 6vh;
-                padding: 0px 25px 0px 25px;
-                gap: 0 !important;
-                margin-top: 1rem;
-            }
-            .documento {
-                opacity: 0.6;
-                transition-property: opacity;
-                transition-duration: 1s;
-            }
-            .documento[tabs]:focus {
-                opacity: 100%;
-                top: 0;
-                left: 100%;
-            }
-            .opacity {
-                background-color: red;
-            }*/
             .imagenDetalle {
                 grid-template-columns: 40% 60%;
                 color: var(--on-formulario);
@@ -249,6 +217,26 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
             *[hidden] {
                 display: none;
             }
+            .popup {
+                position: absolute;
+                left: 0px;
+                top: 32%;
+                left: 7%;
+                border-radius: 10px;
+                background-color: var(--on-formulario);
+                color: var(--formulario);
+                display: none;
+                z-index: 1000;
+                cursor: pointer;
+            }
+            #estadoImagen:hover .popup {
+                position: relative;
+                display: grid;
+                color: var(--on-primario);
+                font-size: 0.8rem;
+                text-align: start;
+                padding: 0rem 0rem;
+            }
         `;
     }
 
@@ -290,18 +278,16 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
                             <div class="documentos inner-grid row align-start">
                                 ${this.imagenesByFactura?.map((item) => {
                                     return html` <div class="documento inner-grid column align-start">
-                                        <div>${INTERROGACION}</div>
-                                        <div>${CHECK}</div>
-                                        <button tabs class="boton" .item=${item.DocumentacionDescripcion} .option=${"auditarImagen"} @click=${this.seleccionarImagen}>
-                                            ${item.DocumentacionDescripcion}
-                                        </button>
+                                        <div class="iconos-estados" id="estadoImagen" title=${this.svgs[item.IdImagenesEstado].estado} estado=${this.svgs[item.IdImagenesEstado].estado}>
+                                            ${this.svgs[item.IdImagenesEstado].imagen}
+                                        </div>
+                                        <button tabs class="boton" .item=${item} .option=${"auditarImagen"} @click=${this.seleccionarImagen}>${item.DocumentacionDescripcion}</button>
                                     </div>`;
                                 })}
                             </div>
                         </div>
                     </div>
                 </div>
-                <auditar-imagen id="auditoriaImagen" ?hidden=${!this.open}></auditar-imagen>
             </div>
         `;
     }
@@ -315,13 +301,10 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
             const isCurrentScreen = ["detalleFactura"].includes(state.screen.name);
             if (isInLayout(state, this.area) && isCurrentScreen) {
                 this.hidden = false;
-                this.open = false;
             }
 
             this.update();
         }
-
-        //this.currentImagen = null;
 
         if (name == CURRENT_FACTURA) {
             this.currentFactura = state.facturas.currentSelection;
@@ -335,14 +318,8 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
 
         if (name == IMAGENES_BY_FACTURA) {
             this.imagenesByFactura = state.facturas.imagenesByFactura;
-            //this.currentImagen = this.imagenesByFactura[0].UrlNom;
             this.update();
         }
-
-        /*if (name == MOTIVO_RECHAZO) {
-            this.motivosRechazoImagenes = state.facturas.motivosRechazo.value;
-            this.update();
-        }*/
     }
 
     atras(e) {
@@ -353,7 +330,7 @@ export class detalleFactura extends connect(store, MEDIA_CHANGE, SCREEN, CURRENT
 
     seleccionarImagen(e) {
         store.dispatch(imagenSelected(e.currentTarget.item));
-        this.open = true;
+        store.dispatch(showAuditarImagen());
 
         this.update();
     }

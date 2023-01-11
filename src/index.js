@@ -12,7 +12,7 @@ import { captureMedia } from "./redux/ui/actions";
 import { goTo } from "./redux/routing/actions";
 import { viewManager } from "./views/manager";
 import { register as registerSW, activate as activateSW } from "./libs/serviceWorker";
-import { getFacturasPendientes, MotivosRechazo } from "./redux/facturas/actions";
+import { MotivosRechazo } from "./redux/facturas/actions";
 
 if (process.env.NODE_ENV === "production") {
     registerSW();
@@ -24,20 +24,6 @@ store.dispatch(captureMedia());
 store.dispatch(goTo("main"));
 
 store.dispatch(MotivosRechazo());
-store.dispatch(
-    getFacturasPendientes({
-        Params: {
-            FacturasEstado: 1,
-            FechaDesde: "",
-            FechaHasta: "",
-            TipoComprobante: "",
-            PuntoVenta: "",
-            TipoDocumento: "",
-            NumeroComprobante: "",
-            Prestador: "",
-        },
-    })
-);
 
 console.log("Sirviendo datos de :" + SERVICE_URL);
 /* if ("credentials" in navigator) {
